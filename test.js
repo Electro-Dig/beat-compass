@@ -22,6 +22,25 @@ for (const corner of toy.STYLE_CORNERS) {
   for (const id of corner.soundIds) assert.ok(soundIds.has(id), `${corner.id} references missing sound ${id}`);
 }
 
+assert.ok(typeof toy.inferSoundFeatures === 'function', 'toy exposes inferSoundFeatures');
+assert.ok(typeof toy.scoreSoundForRole === 'function', 'toy exposes scoreSoundForRole');
+assert.ok(typeof toy.scoreSoundForCorner === 'function', 'toy exposes scoreSoundForCorner');
+assert.ok(typeof toy.getSoundById === 'function', 'toy exposes getSoundById');
+for (const sound of toy.SOUND_LIBRARY) {
+  assert.ok(sound.features, `${sound.id} should include computed features`);
+  for (const [key, value] of Object.entries(sound.features)) {
+    assert.ok(value >= 0 && value <= 1, `${sound.id}.${key} feature should be normalized`);
+  }
+}
+const rubber = toy.getSoundById('rubber-room-kick');
+assert.ok(toy.scoreSoundForRole(rubber, 'kick') > toy.scoreSoundForRole(rubber, 'hat'), 'Rubber Room should score more kick than hat');
+const keyRain = toy.getSoundById('key-rain');
+assert.ok(toy.scoreSoundForRole(keyRain, 'hat') > toy.scoreSoundForRole(keyRain, 'kick'), 'Key Rain should score more hat than kick');
+const toyAlien = toy.getSoundById('toy-alien');
+const glitchCorner = toy.getStyleCorners('material').find(c => c.id === 'glitchCreature');
+const softCorner = toy.getStyleCorners('material').find(c => c.id === 'softRoom');
+assert.ok(toy.scoreSoundForCorner(toyAlien, glitchCorner) > toy.scoreSoundForCorner(toyAlien, softCorner), 'Toy Alien should be closer to Glitch Creature than Soft Room');
+
 const beat = toy.rollBeat({ random: seededRandom(1) });
 assert.strictEqual(beat.tracks.length, 4, 'rollBeat creates 4 tracks');
 for (const track of beat.tracks) {
@@ -60,9 +79,8 @@ const coordinateBeat = toy.rollBeatFromPosition({ x: 1, y: 0 }, { random: seeded
 assert.strictEqual(coordinateBeat.morph.x, 1, 'coordinate beat stores x');
 assert.strictEqual(coordinateBeat.morph.y, 0, 'coordinate beat stores y');
 assert.strictEqual(coordinateBeat.tracks.length, 4, 'coordinate beat creates 4 tracks');
+assert.ok(coordinateBeat.algorithm === 'feature-weighted-v1', 'coordinate beat records feature-weighted algorithm');
 assert.ok(coordinateBeat.name.includes('Metal Spark') || coordinateBeat.cornerLabel.includes('Metal Spark'), 'top-right coordinate should identify Metal Spark as dominant corner');
-
-console.log('logic tests passed');
 
 assert.ok(toy.COORDINATE_SYSTEMS && toy.COORDINATE_SYSTEMS.material && toy.COORDINATE_SYSTEMS.genre, 'toy exposes material and genre coordinate systems');
 assert.strictEqual(toy.getStyleCorners('material').length, 4, 'material system has 4 corners');
@@ -73,3 +91,5 @@ assert.ok(genreBeat.cornerLabel.includes('House') || genreBeat.cornerLabel.inclu
 const materialBeat = toy.rollBeatFromPosition({ x: 0, y: 0 }, { random: seededRandom(9), systemId: 'material' });
 assert.strictEqual(materialBeat.systemId, 'material', 'material beat stores selected coordinate system');
 assert.ok(materialBeat.cornerLabel.includes('Soft'), 'material top-left should preserve Soft corner');
+
+console.log('logic tests passed');

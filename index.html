@@ -187,6 +187,7 @@
     .slot .role { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing:.13em; }
     .slot .tags { display:flex; flex-wrap:wrap; gap:6px; margin-top: 12px; position:relative; z-index:1; }
     .tag { font-size: 11px; padding: 4px 7px; border-radius:999px; background:rgba(255,255,255,.1); color:rgba(255,255,255,.78); }
+    .feature-line { margin-top: 8px; color: rgba(255,248,231,.52); font-size: 12px; line-height: 1.35; position:relative; z-index:1; }
     .lock { position:absolute; top: 12px; right: 12px; z-index:2; display:flex; align-items:center; gap:5px; color:var(--muted); font-size:12px; }
     .lock input { accent-color: var(--yellow); }
 
@@ -265,7 +266,7 @@
       <div>
       <div class="eyebrow">not a serious drum machine · a coordinate sound toy</div>
         <h1>Beat Compass</h1>
-        <p class="lead">在四角风格坐标系里移动一个点，算法会按位置权重混合声音和节奏。锁定喜欢的轨道，再替换其它声音，或者把节奏变密、变稀、变怪。</p>
+        <p class="lead">在四角风格坐标系里移动一个点，算法会按位置权重混合声音特征和节奏。每个声音都有一组低频、高频、噪声、身体感、金属感、怪异度等特征向量。</p>
       </div>
       <div class="transport">
         <button class="play" id="playBtn">▶ Play</button>
@@ -288,7 +289,7 @@
         <div class="weights" id="weights"></div>
       </section>
       <section class="panel">
-        <div class="panel-title"><strong>Mutate Lab</strong><span>16-step loop · 坐标变化会直接反映到这里</span></div>
+        <div class="panel-title"><strong>Mutate Lab</strong><span>16-step loop · feature-weighted v1</span></div>
         <div class="machine">
           <div class="machine-head">
             <div>
@@ -311,7 +312,7 @@
           <button id="generateBtn">Generate here</button>
         </div>
         <div class="compass-copy">
-          <p>每个位置都会计算四角权重：<code>w = bilinear interpolation</code>。权重影响声音族、密度和怪异度；锁定轨道后，你可以保留喜欢的声音，让其它轨道继续随坐标变化。</p>
+          <p>每个位置都会计算四角权重：<code>w = bilinear interpolation</code>。现在不是只按手写声音列表抽样，而是把“坐标角落特征相似度 × 鼓轨角色适配度”合成一个分数，再加权抽取声音。</p>
         </div>
       </section>
     </section>
@@ -325,11 +326,11 @@
       <section class="panel map-wrap">
         <div class="panel-title"><strong>Sound Map</strong><span>tiny fake sample universe</span></div>
         <div class="sound-map" id="soundMap"></div>
-        <div class="map-help">地图里的点是程序化声音，不是外部采样。第一版先验证“抽声音 → 做 beat → 锁定/变异”的快乐；之后可以把这些点替换成真实日常录音。</div>
+        <div class="map-help">地图里的点是程序化声音，不是外部采样。当前版本的 feature vector 由 role / tone / tags 推断；下一步可以接入真实音频分析，把日常录音变成可计算的鼓声宇宙。</div>
       </section>
     </section>
 
-    <p class="footer-note">Prototype: Beat Slot Machine + Mutate Lab. Built as a playful web demo inspired by The Infinite Drum Machine, not a faithful remake.</p>
+    <p class="footer-note">Prototype: Beat Compass + Mutate Lab. Inspired by The Infinite Drum Machine's map-based interaction, but currently uses a handcrafted feature-weighted algorithm rather than the original dataset.</p>
   </main>
 
   <script src="logic.js"></script>
@@ -466,6 +467,7 @@
     function renderSlots() {
       slotsEl.innerHTML = '';
       beat.tracks.forEach((track, i) => {
+        const featureText = featureSummary(track.sound);
         const el = document.createElement('article');
         el.className = 'slot' + (beat.activeTrack === i ? ' active' : '');
         el.style.setProperty('--slot-color', track.sound.color);
@@ -476,11 +478,20 @@
           <div class="emoji">${track.sound.emoji}</div>
           <h3>${track.sound.name}</h3>
           <div class="tags">${track.sound.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+          <div class="feature-line">feature: ${featureText}</div>
         `;
         el.addEventListener('click', () => { beat = setActiveTrack(beat, i); render(); });
         el.querySelector('input').addEventListener('change', (event) => { beat = setLocked(beat, i, event.target.checked); render(); });
         slotsEl.appendChild(el);
       });
+    }
+
+    function featureSummary(sound) {
+      return Object.entries(sound.features || {})
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([key, value]) => `${key} ${Math.round(value * 100)}`)
+        .join(' · ');
     }
 
     function renderGrid() {
@@ -511,7 +522,7 @@
         p.style.left = sound.x + '%'; p.style.top = sound.y + '%';
         p.style.setProperty('--point-color', sound.color);
         p.textContent = sound.emoji;
-        p.title = `${sound.name} · ${sound.tags.join(', ')}`;
+        p.title = `${sound.name} · ${sound.tags.join(', ')} · ${featureSummary(sound)}`;
         p.addEventListener('click', () => { beat = assignSoundToActiveTrack(beat, sound.id); playSound(sound, .9); render(); });
         mapEl.appendChild(p);
       });
