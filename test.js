@@ -11,11 +11,13 @@ function seededRandom(seed) {
 
 assert.strictEqual(toy.STEPS, 16, 'sequencer should use 16 steps');
 assert.strictEqual(toy.TRACKS.length, 4, 'toy should have 4 tracks');
-assert.ok(toy.SOUND_LIBRARY.length >= 28, 'expanded sound map should have at least 28 toy sounds');
+assert.ok(toy.SOUND_LIBRARY.length >= 72, 'V7 sound zoo should have at least 72 toy sounds');
 for (const role of toy.TRACKS.map(t => t.id)) {
   const roleCount = toy.SOUND_LIBRARY.filter(sound => sound.role === role).length;
-  assert.ok(roleCount >= 6, `role ${role} should have at least 6 sound options`);
+  assert.ok(roleCount >= 18, `role ${role} should have at least 18 sound options`);
 }
+const families = new Set(toy.SOUND_LIBRARY.map(sound => sound.family));
+assert.ok(families.size >= 8, 'V7 sound zoo should span at least 8 sound families');
 const soundIds = new Set(toy.SOUND_LIBRARY.map(sound => sound.id));
 for (const corner of toy.STYLE_CORNERS) {
   assert.ok(corner.soundIds.length >= 8, `${corner.id} should reference a rich sound family`);
@@ -30,6 +32,9 @@ assert.ok(typeof toy.rankSoundCandidates === 'function', 'toy exposes rankSoundC
 assert.ok(typeof toy.explainBeatSelection === 'function', 'toy exposes explainBeatSelection for algorithm lens');
 assert.ok(typeof toy.scoreSoundInField === 'function', 'toy exposes scoreSoundInField for sound-map glow');
 for (const sound of toy.SOUND_LIBRARY) {
+  assert.ok(sound.family, `${sound.id} should include a sound family`);
+  assert.ok(sound.recipe && sound.recipe.engine, `${sound.id} should include a synthesis recipe`);
+  assert.ok(typeof sound.recipe.decay === 'number' && sound.recipe.decay > 0, `${sound.id} recipe should include positive decay`);
   assert.ok(sound.features, `${sound.id} should include computed features`);
   for (const [key, value] of Object.entries(sound.features)) {
     assert.ok(value >= 0 && value <= 1, `${sound.id}.${key} feature should be normalized`);

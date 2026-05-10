@@ -47,6 +47,53 @@
     { id: 'toy-alien', name: 'Toy Alien', role: 'texture', emoji: '🧸', color: '#ff006e', x: 86, y: 72, tone: 'glitch', tags: ['toy', 'alien', 'weird'] }
   ];
 
+  SOUND_LIBRARY.push(
+    { id: 'chest-cave', name: 'Chest Cave', role: 'kick', emoji: '🫁', color: '#e85d04', x: 12, y: 66, tone: 'thud', family: 'body', tags: ['body', 'hollow', 'warm'] },
+    { id: 'water-barrel', name: 'Water Barrel', role: 'kick', emoji: '🛢️', color: '#2a9d8f', x: 23, y: 50, tone: 'sub', family: 'liquid', tags: ['water', 'deep', 'round'] },
+    { id: 'suitcase-boom', name: 'Suitcase Boom', role: 'kick', emoji: '🧳', color: '#d97941', x: 28, y: 72, tone: 'kick', family: 'room', tags: ['cloth', 'hollow', 'heavy'] },
+    { id: 'palm-cajon', name: 'Palm Cajon', role: 'kick', emoji: '🫲', color: '#f9844a', x: 34, y: 58, tone: 'wood', family: 'body', tags: ['hand', 'wood', 'dry'] },
+    { id: 'rubber-band-bass', name: 'Rubber Band Bass', role: 'kick', emoji: '🪀', color: '#f3722c', x: 38, y: 68, tone: 'sub', family: 'plastic', tags: ['rubber', 'round', 'pulse'] },
+    { id: 'elevator-thump', name: 'Elevator Thump', role: 'kick', emoji: '🛗', color: '#9a3412', x: 18, y: 44, tone: 'thud', family: 'metal', tags: ['urban', 'metal', 'low'] },
+    { id: 'pillow-kick', name: 'Pillow Kick', role: 'kick', emoji: '🛏️', color: '#ffb4a2', x: 10, y: 36, tone: 'kick', family: 'soft', tags: ['soft', 'cloth', 'short'] },
+    { id: 'trash-bin-heart', name: 'Trash Bin Heart', role: 'kick', emoji: '🗑️', color: '#c1121f', x: 20, y: 86, tone: 'metal', family: 'metal', tags: ['can', 'hollow', 'boom'] },
+    { id: 'mouth-pop-bass', name: 'Mouth Pop Bass', role: 'kick', emoji: '👄', color: '#fb5607', x: 7, y: 60, tone: 'kick', family: 'body', tags: ['body', 'pop', 'round'] },
+    { id: 'cardboard-foot', name: 'Cardboard Foot', role: 'kick', emoji: '🥾', color: '#dda15e', x: 31, y: 92, tone: 'thud', family: 'room', tags: ['box', 'floor', 'stomp'] },
+    { id: 'tape-deck-thud', name: 'Tape Deck Thud', role: 'kick', emoji: '📼', color: '#a15c38', x: 16, y: 90, tone: 'thud', family: 'dust', tags: ['old', 'dust', 'low'] },
+
+    { id: 'envelope-snap', name: 'Envelope Snap', role: 'snare', emoji: '✉️', color: '#ffe8a3', x: 42, y: 31, tone: 'snap', family: 'paper', tags: ['paper', 'snap', 'dry'] },
+    { id: 'bottle-cap-clack', name: 'Bottle Cap Clack', role: 'snare', emoji: '🧴', color: '#ffcf99', x: 62, y: 39, tone: 'clack', family: 'plastic', tags: ['plastic', 'click', 'hard'] },
+    { id: 'ruler-desk-slap', name: 'Ruler Desk Slap', role: 'snare', emoji: '📐', color: '#f9c74f', x: 55, y: 42, tone: 'wood', family: 'room', tags: ['wood', 'flat', 'hard'] },
+    { id: 'palm-table-slap', name: 'Palm Table Slap', role: 'snare', emoji: '🖐️', color: '#ffb703', x: 40, y: 48, tone: 'snap', family: 'body', tags: ['hand', 'clap', 'body'] },
+    { id: 'tray-slap', name: 'Tray Slap', role: 'snare', emoji: '🍽️', color: '#ffd60a', x: 67, y: 33, tone: 'metal', family: 'metal', tags: ['metal', 'ring', 'hard'] },
+    { id: 'magazine-whack', name: 'Magazine Whack', role: 'snare', emoji: '📰', color: '#f4d35e', x: 46, y: 34, tone: 'snap', family: 'paper', tags: ['paper', 'book', 'flat'] },
+    { id: 'jar-lid-crack', name: 'Jar Lid Crack', role: 'snare', emoji: '🫙', color: '#f77f00', x: 72, y: 38, tone: 'metal', family: 'metal', tags: ['glass', 'metal', 'sharp'] },
+    { id: 'noodle-cup-pop', name: 'Noodle Cup Pop', role: 'snare', emoji: '🍜', color: '#fcbf49', x: 60, y: 52, tone: 'clack', family: 'plastic', tags: ['cup', 'plastic', 'pop'] },
+    { id: 'knuckle-door', name: 'Knuckle Door', role: 'snare', emoji: '🚪', color: '#d4a373', x: 36, y: 44, tone: 'wood', family: 'room', tags: ['door', 'wood', 'mid'] },
+    { id: 'cassette-snare', name: 'Cassette Snare', role: 'snare', emoji: '📼', color: '#c9ada7', x: 50, y: 60, tone: 'noise', family: 'dust', tags: ['dust', 'old', 'clap'] },
+    { id: 'bubble-wrap-crack', name: 'Bubble Wrap Crack', role: 'snare', emoji: '🫧', color: '#ffd166', x: 66, y: 58, tone: 'snap', family: 'plastic', tags: ['plastic', 'pop', 'tiny'] },
+
+    { id: 'staple-ticks', name: 'Staple Ticks', role: 'hat', emoji: '📎', color: '#8ecae6', x: 82, y: 17, tone: 'tick', family: 'metal', tags: ['metal', 'tiny', 'sharp'] },
+    { id: 'seed-shaker', name: 'Seed Shaker', role: 'hat', emoji: '🌱', color: '#d9ed92', x: 64, y: 55, tone: 'tick', family: 'paper', tags: ['grain', 'shake', 'soft'] },
+    { id: 'keyboard-rain', name: 'Keyboard Rain', role: 'hat', emoji: '⌨️', color: '#80ffdb', x: 74, y: 36, tone: 'tick', family: 'plastic', tags: ['plastic', 'fast', 'click'] },
+    { id: 'soda-fizz-hat', name: 'Soda Fizz Hat', role: 'hat', emoji: '🥤', color: '#64dfdf', x: 91, y: 46, tone: 'noise', family: 'liquid', tags: ['air', 'bright', 'fast'] },
+    { id: 'bracelet-chime', name: 'Bracelet Chime', role: 'hat', emoji: '📿', color: '#72efdd', x: 87, y: 12, tone: 'metal', family: 'metal', tags: ['metal', 'ring', 'shimmer'] },
+    { id: 'pencil-tap-hat', name: 'Pencil Tap Hat', role: 'hat', emoji: '✏️', color: '#bde0fe', x: 70, y: 50, tone: 'wood', family: 'room', tags: ['wood', 'tiny', 'dry'] },
+    { id: 'cassette-hiss-hat', name: 'Cassette Hiss Hat', role: 'hat', emoji: '📼', color: '#adb5bd', x: 58, y: 70, tone: 'noise', family: 'dust', tags: ['dust', 'old', 'thin'] },
+    { id: 'water-drop-tick', name: 'Water Drop Tick', role: 'hat', emoji: '💧', color: '#48cae4', x: 80, y: 62, tone: 'water', family: 'liquid', tags: ['water', 'tiny', 'bright'] },
+    { id: 'paper-cricket', name: 'Paper Cricket', role: 'hat', emoji: '🦗', color: '#caffbf', x: 68, y: 22, tone: 'tick', family: 'paper', tags: ['paper', 'tiny', 'fast'] },
+    { id: 'zipper-tick', name: 'Zipper Tick', role: 'hat', emoji: '🤐', color: '#90e0ef', x: 89, y: 55, tone: 'zip', family: 'plastic', tags: ['zipper', 'tiny', 'click'] },
+    { id: 'usb-spark', name: 'USB Spark', role: 'hat', emoji: '🔌', color: '#56cfe1', x: 94, y: 36, tone: 'glitch', family: 'electric', tags: ['electric', 'spark', 'tiny'] },
+
+    { id: 'microwave-ghost', name: 'Microwave Ghost', role: 'texture', emoji: '🧲', color: '#9d4edd', x: 55, y: 82, tone: 'noise', family: 'electric', tags: ['electric', 'air', 'old'] },
+    { id: 'aquarium-drone', name: 'Aquarium Drone', role: 'texture', emoji: '🐠', color: '#2ec4b6', x: 24, y: 24, tone: 'water', family: 'liquid', tags: ['water', 'flow', 'slow'] },
+    { id: 'cassette-fog', name: 'Cassette Fog', role: 'texture', emoji: '📼', color: '#b56576', x: 38, y: 82, tone: 'noise', family: 'dust', tags: ['dust', 'old', 'loop'] },
+    { id: 'fridge-halo', name: 'Fridge Halo', role: 'texture', emoji: '🧊', color: '#a0c4ff', x: 32, y: 12, tone: 'noise', family: 'electric', tags: ['electric', 'air', 'slow'] },
+    { id: 'paper-storm', name: 'Paper Storm', role: 'texture', emoji: '🌪️', color: '#f1fa8c', x: 39, y: 10, tone: 'noise', family: 'paper', tags: ['paper', 'air', 'scratch'] },
+    { id: 'bottle-whale', name: 'Bottle Whale', role: 'texture', emoji: '🐋', color: '#4cc9f0', x: 29, y: 58, tone: 'water', family: 'liquid', tags: ['plastic', 'water', 'deep'] },
+    { id: 'modem-insect', name: 'Modem Insect', role: 'texture', emoji: '🪲', color: '#ff5d8f', x: 79, y: 84, tone: 'glitch', family: 'electric', tags: ['electric', 'bug', 'weird'] },
+    { id: 'broom-creature', name: 'Broom Creature', role: 'texture', emoji: '🧹', color: '#a7c957', x: 21, y: 28, tone: 'creak', family: 'room', tags: ['scratch', 'slow', 'alive'] }
+  );
+
   const MATERIAL_CORNERS = [
     {
       id: 'softRoom',
@@ -219,6 +266,87 @@
     const maxDistance = Math.sqrt(FEATURE_KEYS.length);
     return clampFeature(1 - Math.sqrt(distanceSquared) / maxDistance);
   }
+
+  function inferSoundFamily(sound) {
+    if (sound.family) return sound.family;
+    const tags = new Set(sound.tags || []);
+    const score = {
+      body: 0,
+      room: 0,
+      metal: 0,
+      plastic: 0,
+      paper: 0,
+      liquid: 0,
+      electric: 0,
+      dust: 0,
+      soft: 0
+    };
+    const addFamily = (family, value) => { score[family] = (score[family] || 0) + value; };
+    if (['kick', 'sub', 'thud'].includes(sound.tone)) addFamily('body', 1);
+    if (['wood', 'creak'].includes(sound.tone)) addFamily('room', 1);
+    if (['metal', 'hat', 'clack'].includes(sound.tone)) addFamily('metal', 1);
+    if (['water'].includes(sound.tone)) addFamily('liquid', 1.2);
+    if (['noise'].includes(sound.tone)) addFamily('dust', 0.8);
+    if (['zip', 'glitch'].includes(sound.tone)) addFamily('electric', 1);
+    for (const tag of tags) {
+      if (['body', 'hand', 'stomp', 'pulse', 'mouth'].includes(tag)) addFamily('body', 1.5);
+      if (['wood', 'floor', 'door', 'desk', 'box', 'room', 'book'].includes(tag)) addFamily('room', 1.2);
+      if (['metal', 'coin', 'can', 'foil', 'scissor', 'ring'].includes(tag)) addFamily('metal', 1.5);
+      if (['plastic', 'toy', 'zipper', 'rubber', 'phone', 'cup'].includes(tag)) addFamily('plastic', 1.2);
+      if (['paper', 'book', 'envelope', 'magazine'].includes(tag)) addFamily('paper', 1.4);
+      if (['water', 'flow', 'bubble', 'deep'].includes(tag)) addFamily('liquid', 1.4);
+      if (['electric', 'static', 'wire', 'usb', 'bug', 'alien'].includes(tag)) addFamily('electric', 1.4);
+      if (['dust', 'old', 'vinyl', 'cassette', 'tape'].includes(tag)) addFamily('dust', 1.4);
+      if (['soft', 'cloth', 'air'].includes(tag)) addFamily('soft', 1.1);
+    }
+    return Object.entries(score).sort((a, b) => b[1] - a[1])[0][0] || 'room';
+  }
+
+  function buildSynthesisRecipe(sound) {
+    const family = inferSoundFamily(sound);
+    const rolePitch = { kick: 92, snare: 360, hat: 5200, texture: 760 };
+    const tonePitch = {
+      sub: 58,
+      thud: 84,
+      kick: 112,
+      wood: 320,
+      snap: 520,
+      clack: 740,
+      metal: 1240,
+      hat: 7600,
+      tick: 3100,
+      water: 880,
+      noise: 1600,
+      zip: 1900,
+      creak: 420,
+      glitch: 1320
+    };
+    const familyEngine = {
+      body: 'body-thump',
+      room: 'resonant-hit',
+      metal: 'metal-ring',
+      plastic: 'plastic-pop',
+      paper: 'paper-noise',
+      liquid: 'liquid-drop',
+      electric: 'fm-glitch',
+      dust: 'dust-hiss',
+      soft: 'soft-thud'
+    };
+    const roleDecay = { kick: 0.22, snare: 0.16, hat: 0.08, texture: 0.42 };
+    const familyDecay = { body: 0.22, room: 0.18, metal: 0.24, plastic: 0.12, paper: 0.1, liquid: 0.36, electric: 0.2, dust: 0.46, soft: 0.2 };
+    const brightness = clampFeature((sound.features && sound.features.high) || (['metal', 'hat', 'tick', 'glitch'].includes(sound.tone) ? 0.82 : 0.42));
+    const noise = clampFeature((sound.features && sound.features.noise) || (['noise', 'hat', 'water', 'zip'].includes(sound.tone) ? 0.72 : 0.24));
+    return {
+      engine: familyEngine[family] || 'resonant-hit',
+      pitch: tonePitch[sound.tone] || rolePitch[sound.role] || 440,
+      decay: Math.max(0.05, ((roleDecay[sound.role] || 0.2) + (familyDecay[family] || 0.2)) / 2),
+      brightness,
+      noise,
+      drive: family === 'electric' || family === 'metal' ? 0.42 : family === 'dust' ? 0.22 : 0.12,
+      wobble: family === 'liquid' || family === 'electric' ? 0.55 : 0.18
+    };
+  }
+
   function inferSoundFeatures(sound) {
     const features = blankFeatures(0.12);
     const roleSeeds = {
@@ -317,6 +445,18 @@
     for (const tag of sound.tags || []) {
       Object.entries(tagBoosts[tag] || {}).forEach(([key, value]) => bump(features, key, value));
     }
+    const familyBoosts = {
+      body: { body: 0.92, low: 0.72, organic: 0.68 },
+      room: { organic: 0.78, mid: 0.56, body: 0.46 },
+      metal: { metallic: 0.94, high: 0.84, transient: 0.78 },
+      plastic: { synthetic: 0.62, high: 0.5, transient: 0.66 },
+      paper: { soft: 0.7, noise: 0.42, organic: 0.62 },
+      liquid: { soft: 0.82, sustain: 0.72, organic: 0.58 },
+      electric: { synthetic: 0.9, glitch: 0.72, high: 0.66 },
+      dust: { noise: 0.78, sustain: 0.56, organic: 0.46 },
+      soft: { soft: 0.92, transient: 0.34, organic: 0.58 }
+    };
+    Object.entries(familyBoosts[sound.family || inferSoundFamily(sound)] || {}).forEach(([key, value]) => bump(features, key, value));
     if ((sound.tags || []).includes('soft')) add(features, 'transient', -0.1);
     return normalizeFeatureObject(features);
   }
@@ -331,7 +471,9 @@
   }
 
   SOUND_LIBRARY.forEach(sound => {
+    sound.family = sound.family || inferSoundFamily(sound);
     sound.features = inferSoundFeatures(sound);
+    sound.recipe = sound.recipe || buildSynthesisRecipe(sound);
     sound.roleScores = TRACKS.reduce((scores, track) => {
       scores[track.id] = scoreSoundForRole(sound, track.id);
       return scores;

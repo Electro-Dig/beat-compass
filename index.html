@@ -187,6 +187,8 @@
     .slot .role { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing:.13em; }
     .slot .tags { display:flex; flex-wrap:wrap; gap:6px; margin-top: 12px; position:relative; z-index:1; }
     .tag { font-size: 11px; padding: 4px 7px; border-radius:999px; background:rgba(255,255,255,.1); color:rgba(255,255,255,.78); }
+    .family-line { margin-top:8px; position:relative; z-index:1; color:rgba(255,248,231,.62); font-size:12px; }
+    .family-line b { color:var(--paper); }
     .feature-line { margin-top: 8px; color: rgba(255,248,231,.52); font-size: 12px; line-height: 1.35; position:relative; z-index:1; }
     .lock { position:absolute; top: 12px; right: 12px; z-index:2; display:flex; align-items:center; gap:5px; color:var(--muted); font-size:12px; }
     .lock input { accent-color: var(--yellow); }
@@ -286,7 +288,7 @@
       <div>
       <div class="eyebrow">not a serious drum machine · a coordinate sound toy</div>
         <h1>Beat Compass</h1>
-        <p class="lead">在四角风格坐标系里移动一个点，算法会按位置权重混合声音特征和节奏。每个声音都有一组低频、高频、噪声、身体感、金属感、怪异度等特征向量。</p>
+        <p class="lead">在四角风格坐标系里移动一个点，算法会按位置权重混合 72 个声音的特征和节奏。每个声音都有家族、合成配方，以及低频、高频、噪声、身体感、金属感、怪异度等特征向量。</p>
       </div>
       <div class="transport">
         <button class="play" id="playBtn">▶ Play</button>
@@ -347,7 +349,7 @@
       <section class="panel map-wrap">
         <div class="panel-title"><strong>Sound Map</strong><span>tiny fake sample universe</span></div>
         <div class="sound-map" id="soundMap"></div>
-        <div class="map-help">地图里的点是程序化声音，不是外部采样。当前版本的 feature vector 由 role / tone / tags 推断；下一步可以接入真实音频分析，把日常录音变成可计算的鼓声宇宙。</div>
+        <div class="map-help">V7 Sound Zoo：72 个程序化声音，分布在 body / room / metal / plastic / paper / liquid / electric / dust 等家族里。当前 feature vector 由 role / tone / tags / family 推断；下一步可以接入真实音频分析。</div>
       </section>
     </section>
 
@@ -402,30 +404,75 @@
     function playSound(sound, velocity = 1) {
       const ctx = ensureAudio();
       const now = ctx.currentTime;
-      const dur = sound.role === 'texture' ? 0.34 : 0.16;
+      const recipe = sound.recipe || {};
+      const engine = recipe.engine || 'resonant-hit';
+      const dur = Math.max(0.05, recipe.decay || (sound.role === 'texture' ? 0.34 : 0.16));
+      const pitch = recipe.pitch || 440;
       const out = envelope(ctx, dur, 0.55 * velocity);
       out.connect(ctx.destination);
 
-      if (['kick', 'sub', 'thud'].includes(sound.tone)) {
+      if (engine === 'body-thump' || engine === 'soft-thud') {
         const osc = ctx.createOscillator();
-        osc.type = sound.tone === 'sub' ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(sound.tone === 'sub' ? 88 : 142, now);
-        osc.frequency.exponentialRampToValueAtTime(sound.tone === 'sub' ? 36 : 46, now + dur);
+        osc.type = engine === 'soft-thud' ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(pitch * 1.5, now);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(34, pitch * .42), now + dur);
         osc.connect(out); osc.start(now); osc.stop(now + dur);
-      } else if (['hat', 'noise', 'water', 'zip'].includes(sound.tone)) {
+        if (engine === 'body-thump') {
+          const click = ctx.createBufferSource(); click.buffer = noiseBuffer(ctx);
+          const clickFilter = ctx.createBiquadFilter(); clickFilter.type = 'lowpass'; clickFilter.frequency.value = 900;
+          click.connect(clickFilter); clickFilter.connect(out); click.start(now); click.stop(now + Math.min(.055, dur));
+        }
+      } else if (engine === 'paper-noise' || engine === 'dust-hiss') {
         const src = ctx.createBufferSource(); src.buffer = noiseBuffer(ctx);
         const filter = ctx.createBiquadFilter();
-        filter.type = sound.tone === 'hat' ? 'highpass' : 'bandpass';
-        filter.frequency.value = sound.tone === 'hat' ? 7000 : sound.tone === 'water' ? 900 : 1800;
-        filter.Q.value = sound.tone === 'zip' ? 8 : 1.2;
+        filter.type = engine === 'dust-hiss' ? 'bandpass' : 'highpass';
+        filter.frequency.value = engine === 'dust-hiss' ? pitch : Math.max(1800, pitch);
+        filter.Q.value = engine === 'dust-hiss' ? 1.8 : 0.7;
         src.connect(filter); filter.connect(out); src.start(now); src.stop(now + dur);
+      } else if (engine === 'metal-ring') {
+        const osc = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        osc.type = 'square'; osc2.type = 'sine';
+        osc.frequency.setValueAtTime(pitch, now);
+        osc2.frequency.setValueAtTime(pitch * 1.51, now);
+        filter.type = 'bandpass'; filter.frequency.value = pitch * 1.4; filter.Q.value = 7;
+        osc.connect(filter); osc2.connect(filter); filter.connect(out);
+        osc.start(now); osc2.start(now); osc.stop(now + dur); osc2.stop(now + dur * .9);
+      } else if (engine === 'liquid-drop') {
+        const osc = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(pitch * .55, now);
+        osc.frequency.exponentialRampToValueAtTime(pitch * 1.25, now + dur * .42);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(80, pitch * .35), now + dur);
+        filter.type = 'lowpass'; filter.frequency.value = 1400 + (recipe.brightness || .5) * 2200; filter.Q.value = 5;
+        osc.connect(filter); filter.connect(out); osc.start(now); osc.stop(now + dur);
+      } else if (engine === 'fm-glitch') {
+        const carrier = ctx.createOscillator();
+        const mod = ctx.createOscillator();
+        const modGain = ctx.createGain();
+        carrier.type = 'sawtooth'; mod.type = 'square';
+        carrier.frequency.setValueAtTime(pitch, now);
+        mod.frequency.setValueAtTime(pitch * (1.7 + (recipe.wobble || .2)), now);
+        modGain.gain.setValueAtTime(pitch * .35, now);
+        mod.connect(modGain); modGain.connect(carrier.frequency); carrier.connect(out);
+        carrier.start(now); mod.start(now); carrier.stop(now + dur); mod.stop(now + dur);
+      } else if (engine === 'plastic-pop') {
+        const osc = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(pitch * 1.8, now);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(120, pitch * .55), now + dur);
+        filter.type = 'bandpass'; filter.frequency.value = pitch * 1.15; filter.Q.value = 3;
+        osc.connect(filter); filter.connect(out); osc.start(now); osc.stop(now + dur);
       } else {
         const osc = ctx.createOscillator();
         const filter = ctx.createBiquadFilter();
-        osc.type = sound.tone === 'metal' ? 'square' : sound.tone === 'glitch' ? 'sawtooth' : 'triangle';
-        osc.frequency.setValueAtTime(sound.tone === 'metal' ? 980 : sound.tone === 'wood' ? 260 : 520, now);
-        osc.frequency.exponentialRampToValueAtTime(sound.tone === 'metal' ? 620 : 180, now + dur);
-        filter.type = 'bandpass'; filter.frequency.value = sound.tone === 'metal' ? 2400 : 1100; filter.Q.value = 4;
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(100, pitch * .45), now + dur);
+        filter.type = 'bandpass'; filter.frequency.value = pitch * 2; filter.Q.value = 4;
         osc.connect(filter); filter.connect(out); osc.start(now); osc.stop(now + dur);
       }
     }
@@ -499,6 +546,7 @@
           <div class="role">${track.emoji} ${track.label}</div>
           <div class="emoji">${track.sound.emoji}</div>
           <h3>${track.sound.name}</h3>
+          <div class="family-line"><b>${track.sound.family}</b> · ${track.sound.recipe.engine}</div>
           <div class="tags">${track.sound.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
           <div class="feature-line">feature: ${featureText}</div>
         `;
@@ -587,7 +635,7 @@
         p.style.opacity = String(0.42 + fieldScore * 0.58);
         p.style.boxShadow = `0 0 ${10 + fieldScore * 34}px ${sound.color}`;
         p.textContent = sound.emoji;
-        p.title = `${sound.name} · field ${asPct(fieldScore)} · ${sound.tags.join(', ')} · ${featureSummary(sound)}`;
+        p.title = `${sound.name} · ${sound.family}/${sound.recipe.engine} · field ${asPct(fieldScore)} · ${sound.tags.join(', ')} · ${featureSummary(sound)}`;
         p.addEventListener('click', () => { beat = assignSoundToActiveTrack(beat, sound.id); playSound(sound, .9); render(); });
         mapEl.appendChild(p);
       });

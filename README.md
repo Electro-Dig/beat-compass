@@ -6,7 +6,7 @@ A playful coordinate-based drum toy inspired by the interaction ideas behind Goo
 
 ## Current Status
 
-Prototype / V6. Static web app. No build step required.
+Prototype / V7. Static web app. No build step required.
 
 Online demo:
 
@@ -114,7 +114,24 @@ Beat generation then:
 5. Generates 16-step patterns with density and weirdness influenced by the weighted corner values.
 6. Preserves locked tracks when swapping or mutating.
 
-Important limitation: V6 still infers these features from each sound's `role`, `tone`, and `tags`. It is not yet doing real audio analysis. The next algorithmic step would be a small audio-analysis pipeline that extracts features from actual WAV/MP3 samples and places them on the map.
+Important limitation: V7 still infers these features from each sound's `role`, `tone`, `tags`, and `family`. It is not yet doing real audio analysis. The next algorithmic step would be a small audio-analysis pipeline that extracts features from actual WAV/MP3 samples and places them on the map.
+
+## Sound Zoo
+
+V7 expands the built-in sound library from 31 sounds to **72 programmatic toy sounds**:
+
+- 18 Pulse / kick-like sounds.
+- 18 Crack / snare-like sounds.
+- 18 Spark / hat-like sounds.
+- 18 Ghost / texture-like sounds.
+
+Each sound now has:
+
+- `family` — a sound-material family such as `body`, `room`, `metal`, `plastic`, `paper`, `liquid`, `electric`, `dust`, or `soft`.
+- `recipe` — a Web Audio synthesis recipe, for example `body-thump`, `metal-ring`, `paper-noise`, `liquid-drop`, `fm-glitch`, or `dust-hiss`.
+- `features` — inferred values used by the coordinate-field algorithm.
+
+The goal is not realism yet. The goal is to make the sound map feel more like a small ecosystem: many possible objects, distinct timbres, and visible algorithmic preferences.
 
 ## Algorithm Lens
 
