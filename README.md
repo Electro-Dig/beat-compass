@@ -35,11 +35,12 @@ The core loop:
 
 1. Choose a coordinate system preset.
 2. Move the XY point.
-3. Generate a beat from that position.
+3. Sample a beat from the visible probability field.
 4. Watch the 16-step pattern update beside the compass.
 5. Lock favorite tracks.
 6. Mutate rhythm or swap unlocked sounds.
 7. Replace specific sounds from the sound map.
+8. Read the Algorithm Lens to see why each sound was chosen.
 
 ## Coordinate Systems
 
@@ -114,6 +115,29 @@ Beat generation then:
 6. Preserves locked tracks when swapping or mutating.
 
 Important limitation: V6 still infers these features from each sound's `role`, `tone`, and `tags`. It is not yet doing real audio analysis. The next algorithmic step would be a small audio-analysis pipeline that extracts features from actual WAV/MP3 samples and places them on the map.
+
+## Algorithm Lens
+
+V6.1 adds a visible explanation layer so the computation is not hidden behind a random-looking result.
+
+The page now shows:
+
+- **Why this beat?** — the current coordinate weights and algorithm name.
+- **Chosen sound explanation** — for each track, the selected sound's coordinate score, role score, final score, and selected rank.
+- **Top candidates** — the strongest alternative sounds for each track, sorted by score.
+- **Sound Map glow** — map points get larger and brighter when they are more compatible with the current coordinate field.
+
+This makes the interaction closer to:
+
+```text
+move coordinate → probability field changes → candidates re-rank → sample a beat
+```
+
+instead of:
+
+```text
+click button → random beat appears
+```
 
 ## Relationship to The Infinite Drum Machine
 

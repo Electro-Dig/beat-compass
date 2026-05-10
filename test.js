@@ -26,6 +26,9 @@ assert.ok(typeof toy.inferSoundFeatures === 'function', 'toy exposes inferSoundF
 assert.ok(typeof toy.scoreSoundForRole === 'function', 'toy exposes scoreSoundForRole');
 assert.ok(typeof toy.scoreSoundForCorner === 'function', 'toy exposes scoreSoundForCorner');
 assert.ok(typeof toy.getSoundById === 'function', 'toy exposes getSoundById');
+assert.ok(typeof toy.rankSoundCandidates === 'function', 'toy exposes rankSoundCandidates for algorithm lens');
+assert.ok(typeof toy.explainBeatSelection === 'function', 'toy exposes explainBeatSelection for algorithm lens');
+assert.ok(typeof toy.scoreSoundInField === 'function', 'toy exposes scoreSoundInField for sound-map glow');
 for (const sound of toy.SOUND_LIBRARY) {
   assert.ok(sound.features, `${sound.id} should include computed features`);
   for (const [key, value] of Object.entries(sound.features)) {
@@ -81,6 +84,31 @@ assert.strictEqual(coordinateBeat.morph.y, 0, 'coordinate beat stores y');
 assert.strictEqual(coordinateBeat.tracks.length, 4, 'coordinate beat creates 4 tracks');
 assert.ok(coordinateBeat.algorithm === 'feature-weighted-v1', 'coordinate beat records feature-weighted algorithm');
 assert.ok(coordinateBeat.name.includes('Metal Spark') || coordinateBeat.cornerLabel.includes('Metal Spark'), 'top-right coordinate should identify Metal Spark as dominant corner');
+
+const metalWeights = toy.weightsFromPosition({ x: 1, y: 0 }, 'material');
+const rankedHats = toy.rankSoundCandidates('hat', metalWeights, { systemId: 'material', limit: 4 });
+assert.strictEqual(rankedHats.length, 4, 'rankSoundCandidates should respect limit');
+for (let i = 1; i < rankedHats.length; i++) {
+  assert.ok(rankedHats[i - 1].finalScore >= rankedHats[i].finalScore, 'ranked candidates should sort by finalScore descending');
+}
+for (const candidate of rankedHats) {
+  assert.ok(candidate.sound.id, 'ranked candidate includes sound');
+  assert.ok(candidate.coordinateScore >= 0 && candidate.coordinateScore <= 1, 'candidate coordinateScore is normalized');
+  assert.ok(candidate.roleScore >= 0 && candidate.roleScore <= 1, 'candidate roleScore is normalized');
+  assert.ok(candidate.finalScore >= 0 && candidate.finalScore <= 1, 'candidate finalScore is normalized');
+  assert.ok(candidate.cornerScores && candidate.cornerScores.metalSpark >= 0, 'candidate includes per-corner scores');
+}
+const fieldScore = toy.scoreSoundInField(toy.getSoundById('coin-spark'), metalWeights, 'material');
+assert.ok(fieldScore >= 0 && fieldScore <= 1, 'scoreSoundInField should return normalized map glow score');
+const explanation = toy.explainBeatSelection(coordinateBeat, { limit: 3 });
+assert.strictEqual(explanation.algorithm, 'feature-weighted-v1', 'explanation keeps algorithm label');
+assert.strictEqual(explanation.tracks.length, 4, 'explanation includes each track');
+for (const track of explanation.tracks) {
+  assert.ok(track.selected && track.selected.sound.id, 'track explanation includes selected sound');
+  assert.ok(track.selected.rank >= 1, 'selected sound has rank');
+  assert.strictEqual(track.topCandidates.length, 3, 'track explanation includes top candidates');
+  assert.ok(track.reason.includes('coordinate'), 'track explanation has human-readable reason');
+}
 
 assert.ok(toy.COORDINATE_SYSTEMS && toy.COORDINATE_SYSTEMS.material && toy.COORDINATE_SYSTEMS.genre, 'toy exposes material and genre coordinate systems');
 assert.strictEqual(toy.getStyleCorners('material').length, 4, 'material system has 4 corners');

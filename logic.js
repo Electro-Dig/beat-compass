@@ -383,13 +383,93 @@
     return getStyleCorners(systemId).reduce((sum, corner) => sum + weights[corner.id] * corner[key], 0);
   }
 
+  function cornerAffinity(sound, corner) {
+    const featureAffinity = scoreSoundForCorner(sound, corner);
+    const familyAffinity = corner.soundIds.includes(sound.id) ? 1 : 0.08;
+    return featureAffinity * 0.78 + familyAffinity * 0.22;
+  }
+
   function styleScore(sound, weights, systemId = 'material') {
     return getStyleCorners(systemId).reduce((score, corner) => {
-      const featureAffinity = scoreSoundForCorner(sound, corner);
-      const familyAffinity = corner.soundIds.includes(sound.id) ? 1 : 0.08;
-      const affinity = featureAffinity * 0.78 + familyAffinity * 0.22;
-      return score + weights[corner.id] * affinity;
+      return score + weights[corner.id] * cornerAffinity(sound, corner);
     }, 0);
+  }
+
+  function scoreSoundInField(sound, weights, systemId = 'material') {
+    return clampFeature(styleScore(sound, weights, systemId));
+  }
+
+  function cornerScoresForSound(sound, systemId = 'material') {
+    return getStyleCorners(systemId).reduce((scores, corner) => {
+      scores[corner.id] = cornerAffinity(sound, corner);
+      return scores;
+    }, {});
+  }
+
+  function candidateBreakdown(sound, role, weights, systemId = 'material') {
+    const coordinateScore = scoreSoundInField(sound, weights, systemId);
+    const roleScore = scoreSoundForRole(sound, role);
+    const finalScore = clampFeature(coordinateScore * 0.68 + roleScore * 0.32);
+    return {
+      sound,
+      coordinateScore,
+      roleScore,
+      finalScore,
+      cornerScores: cornerScoresForSound(sound, systemId)
+    };
+  }
+
+  function rankSoundCandidates(role, weights, opts = {}) {
+    const systemId = opts.systemId || 'material';
+    const safeWeights = weights || weightsFromPosition({ x: 0.5, y: 0.5 }, systemId);
+    let candidates = SOUND_LIBRARY.filter(s => s.role === role && s.id !== opts.excludeId);
+    if (!candidates.length) candidates = SOUND_LIBRARY.filter(s => s.id !== opts.excludeId);
+    if (!candidates.length) candidates = SOUND_LIBRARY;
+    const ranked = candidates
+      .map(sound => candidateBreakdown(sound, role, safeWeights, systemId))
+      .sort((a, b) => b.finalScore - a.finalScore);
+    const limit = Number.isFinite(opts.limit) ? Math.max(0, opts.limit) : ranked.length;
+    return ranked.slice(0, limit).map((entry, index) => ({ ...entry, rank: index + 1 }));
+  }
+
+  function topFeatureLabels(sound, limit = 3) {
+    return Object.entries(sound.features || {})
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(([key, value]) => ({ key, value }));
+  }
+
+  function explainBeatSelection(beat, opts = {}) {
+    const systemId = opts.systemId || beat.systemId || 'material';
+    const weights = beat.cornerWeights || weightsFromPosition(beat.morph || { x: 0.5, y: 0.5 }, systemId);
+    const limit = Number.isFinite(opts.limit) ? opts.limit : 3;
+    const tracks = beat.tracks.map(track => {
+      const fullRanking = rankSoundCandidates(track.role, weights, { systemId });
+      const selectedIndex = fullRanking.findIndex(entry => entry.sound.id === track.sound.id);
+      const selected = selectedIndex >= 0
+        ? fullRanking[selectedIndex]
+        : { ...candidateBreakdown(track.sound, track.role, weights, systemId), rank: fullRanking.length + 1 };
+      const coordinatePct = Math.round(selected.coordinateScore * 100);
+      const rolePct = Math.round(selected.roleScore * 100);
+      const finalPct = Math.round(selected.finalScore * 100);
+      const features = topFeatureLabels(track.sound, 3);
+      return {
+        role: track.role,
+        label: track.label,
+        emoji: track.emoji,
+        selected,
+        topCandidates: fullRanking.slice(0, limit),
+        features,
+        reason: `${track.sound.name}: coordinate ${coordinatePct}% + ${track.label} role ${rolePct}% → final ${finalPct}%`
+      };
+    });
+    return {
+      algorithm: beat.algorithm || 'feature-weighted-v1',
+      systemId,
+      cornerWeights: weights,
+      dominantCorner: dominantCorner(weights, systemId),
+      tracks
+    };
   }
 
   function weightedChoose(list, random, weightFn) {
@@ -414,11 +494,7 @@
     let candidates = SOUND_LIBRARY.filter(s => s.role === role && s.id !== excludeId);
     if (!candidates.length) candidates = SOUND_LIBRARY.filter(s => s.id !== excludeId);
     if (!candidates.length) candidates = SOUND_LIBRARY;
-    return weightedChoose(candidates, random, sound => {
-      const coordinateScore = styleScore(sound, weights, systemId);
-      const roleScore = scoreSoundForRole(sound, role);
-      return coordinateScore * 0.68 + roleScore * 0.32;
-    });
+    return weightedChoose(candidates, random, sound => candidateBreakdown(sound, role, weights, systemId).finalScore);
   }
 
   function basePattern(role, random, density) {
@@ -607,6 +683,9 @@
     inferSoundFeatures,
     scoreSoundForRole,
     scoreSoundForCorner,
+    scoreSoundInField,
+    rankSoundCandidates,
+    explainBeatSelection,
     getSoundById,
     rollBeat,
     rollBeatFromPosition,

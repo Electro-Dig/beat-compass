@@ -212,6 +212,25 @@
     .cell.beatline { border-color: rgba(255,255,255,.28); }
 
     .actions { display:flex; flex-wrap:wrap; gap: 8px; margin-top: 14px; }
+    .algorithm-lens {
+      margin: 14px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.13);
+      background: linear-gradient(135deg, rgba(0,0,0,.24), rgba(255,255,255,.055));
+      overflow:hidden;
+    }
+    .lens-head { display:flex; justify-content:space-between; gap:12px; padding: 12px 14px; border-bottom:1px solid rgba(255,255,255,.1); color:var(--muted); font-size:13px; }
+    .lens-head strong { color:var(--paper); text-transform:uppercase; letter-spacing:.1em; }
+    .lens-tracks { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 12px; }
+    .lens-card { border-radius: 18px; padding: 12px; background:rgba(0,0,0,.2); border:1px solid rgba(255,255,255,.1); }
+    .lens-card h4 { margin:0 0 6px; font-size:14px; }
+    .lens-reason { color:rgba(255,248,231,.68); font-size:12px; line-height:1.4; margin-bottom:8px; }
+    .candidate { display:grid; grid-template-columns: minmax(90px, 1fr) 52px; gap: 8px; align-items:center; margin-top:6px; font-size:12px; color:rgba(255,248,231,.78); }
+    .candidate small { color:rgba(255,248,231,.48); }
+    .candidate-bar { grid-column: 1 / -1; height: 6px; border-radius:999px; background:rgba(255,255,255,.09); overflow:hidden; }
+    .candidate-fill { height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, var(--green), var(--cyan), var(--pink)); box-shadow:0 0 16px rgba(122,215,255,.45); }
+    .feature-chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+    .feature-chip { border-radius:999px; padding:3px 6px; background:rgba(255,255,255,.08); color:rgba(255,248,231,.58); font-size:11px; }
 
     .map-wrap { min-height: 564px; display:flex; flex-direction:column; }
     .sound-map { position: relative; flex: 1; min-height: 430px; margin: 14px; border-radius: 26px; overflow:hidden; background: radial-gradient(circle at 48% 42%, rgba(61,90,128,.45), rgba(5,8,20,.96) 68%); border: 1px solid rgba(255,255,255,.12); }
@@ -250,6 +269,7 @@
       header, .layout { grid-template-columns: 1fr; }
       .transport { justify-content:flex-start; }
       .slots { grid-template-columns: repeat(2, 1fr); }
+      .lens-tracks { grid-template-columns: 1fr; }
       .track-row { grid-template-columns: 60px repeat(16, minmax(15px,1fr)); gap: 3px; }
       .track-label span:last-child { display:none; }
     }
@@ -271,7 +291,7 @@
       <div class="transport">
         <button class="play" id="playBtn">▶ Play</button>
         <button class="stop" id="stopBtn">Stop</button>
-        <button class="primary" id="rollBtn">◎ Generate from Position</button>
+        <button class="primary" id="rollBtn">◎ Sample from Field</button>
       </div>
     </header>
 
@@ -306,10 +326,11 @@
             <button id="weirdBtn">Make weirder</button>
           </div>
         </div>
+        <div class="algorithm-lens" id="algorithmLens"></div>
         <div class="compass-actions">
           <button id="randomPositionBtn">Random position</button>
           <button id="centerBtn">Center mix</button>
-          <button id="generateBtn">Generate here</button>
+          <button id="generateBtn">Sample here</button>
         </div>
         <div class="compass-copy">
           <p>每个位置都会计算四角权重：<code>w = bilinear interpolation</code>。现在不是只按手写声音列表抽样，而是把“坐标角落特征相似度 × 鼓轨角色适配度”合成一个分数，再加权抽取声音。</p>
@@ -335,7 +356,7 @@
 
   <script src="logic.js"></script>
   <script>
-    const { rollBeatFromPosition, weightsFromPosition, COORDINATE_SYSTEMS, getStyleCorners, getCoordinateSystem, swapUnlockedSounds, mutateRhythm, makeDenser, makeSparser, makeWeirder, toggleStep, setLocked, setActiveTrack, assignSoundToActiveTrack, SOUND_LIBRARY, STEPS } = BeatToy;
+    const { rollBeatFromPosition, weightsFromPosition, COORDINATE_SYSTEMS, getStyleCorners, getCoordinateSystem, explainBeatSelection, scoreSoundInField, swapUnlockedSounds, mutateRhythm, makeDenser, makeSparser, makeWeirder, toggleStep, setLocked, setActiveTrack, assignSoundToActiveTrack, SOUND_LIBRARY, STEPS } = BeatToy;
 
     let systemId = 'material';
     let morph = { x: 0.34, y: 0.62 };
@@ -354,6 +375,7 @@
     const systemTabsEl = document.getElementById('systemTabs');
     const beatNameEl = document.getElementById('beatName');
     const tempoLabel = document.getElementById('tempoLabel');
+    const algorithmLensEl = document.getElementById('algorithmLens');
 
     function ensureAudio() {
       if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
@@ -411,7 +433,7 @@
     function render() {
       beatNameEl.textContent = beat.name;
       tempoLabel.textContent = beat.tempo + ' BPM';
-      renderSystemTabs(); renderCompass(); renderSlots(); renderGrid(); renderMap();
+      renderSystemTabs(); renderCompass(); renderSlots(); renderGrid(); renderMap(); renderAlgorithmLens();
     }
 
     function renderSystemTabs() {
@@ -494,6 +516,41 @@
         .join(' · ');
     }
 
+    function asPct(value) {
+      return Math.round(Math.max(0, Math.min(1, value || 0)) * 100);
+    }
+
+    function renderAlgorithmLens() {
+      const explanation = explainBeatSelection(beat, { systemId, limit: 3 });
+      const weightsText = Object.entries(explanation.cornerWeights)
+        .map(([key, value]) => `${key} ${asPct(value)}%`)
+        .join(' · ');
+      algorithmLensEl.innerHTML = `
+        <div class="lens-head">
+          <strong>Why this beat?</strong>
+          <span>${explanation.algorithm} · ${weightsText}</span>
+        </div>
+        <div class="lens-tracks">
+          ${explanation.tracks.map(track => `
+            <article class="lens-card">
+              <h4>${track.emoji} ${track.label}: ${track.selected.sound.name} <small>#${track.selected.rank}</small></h4>
+              <div class="lens-reason">${track.reason}</div>
+              <div class="feature-chips">
+                ${track.features.map(feature => `<span class="feature-chip">${feature.key} ${asPct(feature.value)}</span>`).join('')}
+              </div>
+              ${track.topCandidates.map(candidate => `
+                <div class="candidate">
+                  <span>${candidate.sound.emoji} ${candidate.sound.name}<br><small>coord ${asPct(candidate.coordinateScore)} · role ${asPct(candidate.roleScore)}</small></span>
+                  <b>${asPct(candidate.finalScore)}</b>
+                  <div class="candidate-bar"><div class="candidate-fill" style="width:${asPct(candidate.finalScore)}%"></div></div>
+                </div>
+              `).join('')}
+            </article>
+          `).join('')}
+        </div>
+      `;
+    }
+
     function renderGrid() {
       gridEl.innerHTML = '';
       beat.tracks.forEach((track, trackIndex) => {
@@ -516,13 +573,21 @@
       mapEl.innerHTML = '';
       const usedIds = new Set(beat.tracks.map(t => t.sound.id));
       const activeSoundId = beat.tracks[beat.activeTrack || 0].sound.id;
+      const fieldWeights = weightsFromPosition(morph, systemId);
       SOUND_LIBRARY.forEach(sound => {
+        const fieldScore = scoreSoundInField(sound, fieldWeights, systemId);
+        const size = 18 + fieldScore * 20;
         const p = document.createElement('button');
         p.className = 'point' + (usedIds.has(sound.id) ? ' used' : '') + (activeSoundId === sound.id ? ' active-sound' : '');
         p.style.left = sound.x + '%'; p.style.top = sound.y + '%';
         p.style.setProperty('--point-color', sound.color);
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.margin = `${-size / 2}px 0 0 ${-size / 2}px`;
+        p.style.opacity = String(0.42 + fieldScore * 0.58);
+        p.style.boxShadow = `0 0 ${10 + fieldScore * 34}px ${sound.color}`;
         p.textContent = sound.emoji;
-        p.title = `${sound.name} · ${sound.tags.join(', ')} · ${featureSummary(sound)}`;
+        p.title = `${sound.name} · field ${asPct(fieldScore)} · ${sound.tags.join(', ')} · ${featureSummary(sound)}`;
         p.addEventListener('click', () => { beat = assignSoundToActiveTrack(beat, sound.id); playSound(sound, .9); render(); });
         mapEl.appendChild(p);
       });
