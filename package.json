@@ -1,0 +1,18 @@
+﻿{
+  "name": "beat-compass",
+  "version": "0.1.0",
+  "description": "A coordinate-based drum toy inspired by The Infinite Drum Machine interaction model.",
+  "private": true,
+  "scripts": {
+    "test": "node test.js",
+    "start": "python -m http.server 58410 --bind 127.0.0.1"
+  },
+  "keywords": [
+    "drum-machine",
+    "sound-map",
+    "creative-coding",
+    "web-audio",
+    "interactive-music"
+  ],
+  "license": "UNLICENSED"
+}
